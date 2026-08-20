@@ -11,7 +11,7 @@ function img(filename: string) {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface Marker { x: number; y: number; label: string }
+interface Marker { x: number; y: number; label: string; question?: string }
 interface Annotation { label: string; text: string }
 
 interface Slide {
@@ -293,7 +293,7 @@ function Flashcard({ slide, onNext, onPrev, index, total, revealed, onReveal }: 
             <text x="8" y="12.5" textAnchor="middle" fontSize="9.5" fontWeight="700" fill={tc.accent} fontFamily="Inter, sans-serif">?</text>
           </svg>
           <p style={{ margin: 0, fontSize: '13px', color: tc.accent, fontWeight: 500 }}>
-            ¿Qué estructura señala la flecha roja?
+            {marker.question?.trim() || '¿Qué estructura señala la flecha roja?'}
           </p>
         </div>
 
