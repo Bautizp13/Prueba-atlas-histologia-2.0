@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import ImageMarkerTool from './components/ImageMarkerTool';
 import { MastocitoPensando, MastocitoCorriendo, MastocitoSaludando, MastocitoSorprendido } from './Mastocito'
 
 // ─── Imágenes ────────────────────────────────────────────────────────────────
