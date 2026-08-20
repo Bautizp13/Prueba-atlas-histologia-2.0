@@ -11,8 +11,12 @@ function img(filename: string) {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface Marker { x: number; y: number; label: string; question?: string }
+interface Marker { x: number; y: number; label: string }
 interface Annotation { label: string; text: string }
+
+// Una pregunta de Modo Repaso: apunta a una flecha por su etiqueta (label).
+// Un mismo preparado puede tener varias, incluso repitiendo la misma flecha.
+interface FlashcardData { marker: string; question: string; answer: string }
 
 interface Slide {
   id: number
@@ -23,6 +27,16 @@ interface Slide {
   img: string
   markers: Marker[]
   annotations: Annotation[]
+  flashcards: FlashcardData[]
+}
+
+// Una tarjeta ya "resuelta" para Modo Repaso: el preparado + la flecha concreta
+// que le corresponde a esa pregunta (buscada por label dentro de slide.markers).
+interface ReviewCard {
+  slide: Slide
+  marker: Marker
+  question: string
+  answer: string
 }
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -45,10 +59,25 @@ const SLIDES: Slide[] = Object.values(preparadoFiles)
       img: img(filename),
       markers: raw.markers ?? [],
       annotations: raw.annotations ?? [],
+      flashcards: raw.flashcards ?? [],
     } as Slide
   })
   .sort((a, b) => a.id - b.id)
 
+// Aplana todas las preguntas de todos los preparados en una sola lista de
+// tarjetas para Modo Repaso. Cada flashcard del JSON apunta a una flecha por
+// su "label"; acá se resuelve esa referencia contra slide.markers para saber
+// dónde dibujar la flecha en la imagen. Si la flecha referenciada no existe
+// (por ejemplo se borró), esa pregunta se descarta en vez de romper la app.
+const REVIEW_CARDS: ReviewCard[] = SLIDES.flatMap((slide) =>
+  slide.flashcards
+    .map((fc) => {
+      const marker = slide.markers.find((m) => m.label === fc.marker)
+      if (!marker) return null
+      return { slide, marker, question: fc.question, answer: fc.answer } as ReviewCard
+    })
+    .filter((c): c is ReviewCard => c !== null)
+)
 
 // Color per tissue block
 const TISSUE_COLORS: Record<string, { accent: string; bg: string; border: string; badge: string }> = {
@@ -246,14 +275,15 @@ function TissueBlock({ tissue, slides, defaultOpen = false }: { tissue: string; 
 }
 
 // ─── Flashcard ────────────────────────────────────────────────────────────────
+// Recibe una ReviewCard (preparado + flecha concreta + pregunta + respuesta),
+// no un Slide entero: un mismo preparado puede aportar varias tarjetas.
 
-function Flashcard({ slide, onNext, onPrev, index, total, revealed, onReveal }: {
-  slide: Slide; onNext: () => void; onPrev: () => void; index: number; total: number
+function Flashcard({ card, onNext, onPrev, index, total, revealed, onReveal }: {
+  card: ReviewCard; onNext: () => void; onPrev: () => void; index: number; total: number
   revealed: boolean; onReveal: () => void
 }) {
+  const { slide, marker, question, answer } = card
   const tc = tissueColor(slide.tissue)
-  const marker = slide.markers[0]
-  const annotation = slide.annotations[0]
 
   return (
     <div style={{ maxWidth: '680px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '0' }}>
@@ -261,17 +291,9 @@ function Flashcard({ slide, onNext, onPrev, index, total, revealed, onReveal }: 
       {/* Progress */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
         <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
-          Preparado <strong style={{ color: 'var(--text)' }}>{index + 1}</strong> de {total}
+          Pregunta <strong style={{ color: 'var(--text)' }}>{index + 1}</strong> de {total}
         </span>
-        <div style={{ display: 'flex', gap: '5px' }}>
-          {Array.from({ length: total }).map((_, i) => (
-            <div key={i} style={{
-              width: '32px', height: '4px', borderRadius: '2px',
-              background: i === index ? tc.accent : 'var(--border)',
-              transition: 'background 0.2s',
-            }} />
-          ))}
-        </div>
+        <span style={{ fontSize: '11.5px', color: 'var(--muted)' }}>{slide.name}</span>
       </div>
 
       {/* Card */}
@@ -293,7 +315,7 @@ function Flashcard({ slide, onNext, onPrev, index, total, revealed, onReveal }: 
             <text x="8" y="12.5" textAnchor="middle" fontSize="9.5" fontWeight="700" fill={tc.accent} fontFamily="Inter, sans-serif">?</text>
           </svg>
           <p style={{ margin: 0, fontSize: '13px', color: tc.accent, fontWeight: 500 }}>
-            {marker.question?.trim() || '¿Qué estructura señala la flecha roja?'}
+            {question?.trim() || '¿Qué estructura señala la flecha roja?'}
           </p>
         </div>
 
@@ -327,48 +349,21 @@ function Flashcard({ slide, onNext, onPrev, index, total, revealed, onReveal }: 
             </button>
           ) : (
             <div style={{ animation: 'fadeIn 0.3s ease' }}>
-              {/* Main answer */}
               <div style={{
                 border: `1.5px solid ${tc.border}`,
-                borderRadius: '10px', overflow: 'hidden', marginBottom: '10px',
+                borderRadius: '10px', overflow: 'hidden',
               }}>
                 <div style={{ background: tc.bg, padding: '12px 16px', borderBottom: `1px solid ${tc.border}` }}>
                   <p style={{ margin: 0, fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: tc.accent, fontWeight: 600 }}>
-                    La flecha roja señala:
+                    Respuesta
                   </p>
                 </div>
                 <div style={{ padding: '14px 16px' }}>
-                  <p className="font-display" style={{ margin: '0 0 6px', fontSize: '20px', color: 'var(--text)' }}>
-                    {slide.structure}
-                  </p>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--muted)', lineHeight: 1.65 }}>
-                    {annotation.text}
+                  <p style={{ margin: 0, fontSize: '14.5px', color: 'var(--text)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                    {answer}
                   </p>
                 </div>
               </div>
-
-              {/* All annotations */}
-              {slide.annotations.length > 1 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {slide.annotations.map(a => (
-                    <div key={a.label} style={{
-                      display: 'flex', gap: '12px', alignItems: 'flex-start',
-                      padding: '10px 14px',
-                      background: tc.bg, borderRadius: '8px',
-                      border: `1px solid ${tc.border}`,
-                    }}>
-                      <span style={{
-                        flexShrink: 0, width: '20px', height: '20px', borderRadius: '50%',
-                        background: tc.accent, color: '#fff', fontSize: '9.5px', fontWeight: 700,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px',
-                      }}>
-                        {a.label}
-                      </span>
-                      <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text)', lineHeight: 1.6 }}>{a.text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -675,50 +670,58 @@ export default function App() {
               </p>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {(() => {
-                const RepasoMascot = revealed ? MastocitoSorprendido : MastocitoPensando
-                return (
-                  <>
-                    <RepasoMascot
-                      height={240}
-                      animate={false}
-                      className="mascot-pensando-side"
-                      style={{
-                        position: 'relative',
-                        zIndex: 0,
-                        marginRight: '-53px',
-                      }}
-                    />
-                    <div style={{ position: 'relative', zIndex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <RepasoMascot
-                          height={140}
-                          animate={false}
-                          className="mascot-pensando-top"
-                          style={{
-                            position: 'relative',
-                            zIndex: 0,
-                            marginBottom: '-47px',
-                          }}
-                        />
-                      </div>
+            {REVIEW_CARDS.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--muted)' }}>
+                <p className="font-display" style={{ fontSize: '22px', margin: '0 0 8px', color: '#b5365a' }}>Todavía no hay preguntas</p>
+                <p style={{ margin: 0, fontSize: '14px' }}>Cargá preguntas de Modo Repaso desde el generador de preparados.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {(() => {
+                  const RepasoMascot = revealed ? MastocitoSorprendido : MastocitoPensando
+                  const safeIndex = Math.min(cardIndex, REVIEW_CARDS.length - 1)
+                  return (
+                    <>
+                      <RepasoMascot
+                        height={240}
+                        animate={false}
+                        className="mascot-pensando-side"
+                        style={{
+                          position: 'relative',
+                          zIndex: 0,
+                          marginRight: '-53px',
+                        }}
+                      />
                       <div style={{ position: 'relative', zIndex: 1 }}>
-                        <Flashcard
-                          slide={SLIDES[cardIndex]}
-                          index={cardIndex}
-                          total={SLIDES.length}
-                          revealed={revealed}
-                          onReveal={() => setRevealed(true)}
-                          onNext={() => { setCardIndex(i => Math.min(i + 1, SLIDES.length - 1)); setRevealed(false) }}
-                          onPrev={() => { setCardIndex(i => Math.max(i - 1, 0)); setRevealed(false) }}
-                        />
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                          <RepasoMascot
+                            height={140}
+                            animate={false}
+                            className="mascot-pensando-top"
+                            style={{
+                              position: 'relative',
+                              zIndex: 0,
+                              marginBottom: '-47px',
+                            }}
+                          />
+                        </div>
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                          <Flashcard
+                            card={REVIEW_CARDS[safeIndex]}
+                            index={safeIndex}
+                            total={REVIEW_CARDS.length}
+                            revealed={revealed}
+                            onReveal={() => setRevealed(true)}
+                            onNext={() => { setCardIndex(i => Math.min(i + 1, REVIEW_CARDS.length - 1)); setRevealed(false) }}
+                            onPrev={() => { setCardIndex(i => Math.max(i - 1, 0)); setRevealed(false) }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )
-              })()}
-            </div>
+                    </>
+                  )
+                })()}
+              </div>
+            )}
           </>
         )}
       </main>
