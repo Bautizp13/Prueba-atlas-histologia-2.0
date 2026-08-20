@@ -2,9 +2,6 @@ backend:
   name: git-gateway
   branch: main
 
-# El login y los permisos los maneja Netlify Identity + Git Gateway,
-# así que acá no hace falta configurar usuarios ni contraseñas.
-
 media_folder: "public/images"
 public_folder: "/images"
 
@@ -42,11 +39,13 @@ collections:
       - label: "Flechas (marcadores)"
         name: "markers"
         widget: "list"
-        summary: "{{fields.label}} — x:{{fields.x}} y:{{fields.y}}"
+        summary: "{{fields.label}} — {{fields.question}}"
+        hint: "Para saber los valores exactos de x e y sin adivinar, subí la foto en la herramienta '/admin/marcador.html' (se abre en otra pestaña), hacé clic en el punto exacto y copiá los dos números que te muestra."
         fields:
           - { label: "Número/label de la flecha", name: "label", widget: "string" }
           - { label: "Posición horizontal (% desde la izquierda, 0-100)", name: "x", widget: "number", value_type: "float" }
           - { label: "Posición vertical (% desde arriba, 0-100)", name: "y", widget: "number", value_type: "float" }
+          - { label: "Pregunta para el Modo Repaso", name: "question", widget: "string", required: false, hint: "Ej: ¿Qué tipo de epitelio es este? Si lo dejás vacío, se usa la pregunta genérica por defecto." }
       - label: "Anotaciones"
         name: "annotations"
         widget: "list"
