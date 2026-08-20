@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import ImageMarkerTool from './components/ImageMarkerTool';
 import { MastocitoPensando, MastocitoCorriendo, MastocitoSaludando, MastocitoSorprendido } from './Mastocito'
 
 // ─── Imágenes ────────────────────────────────────────────────────────────────
@@ -410,7 +409,7 @@ function Flashcard({ slide, onNext, onPrev, index, total, revealed, onReveal }: 
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
-type Tab = 'atlas' | 'repaso' | 'editor'
+type Tab = 'atlas' | 'repaso'
 
 function WelcomeScreen({ onDone }: { onDone: () => void }) {
   const [phase, setPhase] = useState<'in' | 'visible' | 'out'>('in')
@@ -562,7 +561,7 @@ export default function App() {
 
           {/* Tabs */}
           <nav style={{ display: 'flex', gap: '4px', background: 'rgba(200,140,165,0.1)', padding: '4px', borderRadius: '10px' }}>
-            {([['atlas', 'Atlas'], ['repaso', 'Modo Repaso'], ['editor', 'Editor']] as [Tab, string][]).map(([key, label]) => (
+            {([['atlas', 'Atlas'], ['repaso', 'Modo Repaso']] as [Tab, string][]).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setTab(key)}
@@ -722,27 +721,6 @@ export default function App() {
             </div>
           </>
         )}
-
-        {/* ── EDITOR ── */}
-        {tab === 'editor' && (
-          <>
-            <div style={{ marginBottom: '40px', textAlign: 'center' }}>
-              <p style={{ margin: '0 0 6px', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#b5365a', fontWeight: 600 }}>
-                Herramienta interactiva
-              </p>
-              <h1 className="font-display" style={{ margin: '0 0 10px', fontSize: 'clamp(26px, 6vw, 38px)', fontWeight: 400, color: 'var(--rose-dark)', lineHeight: 1.2 }}>
-                Editor de Preparados
-              </h1>
-              <p style={{ margin: '0 auto', fontSize: '15px', color: 'var(--muted)', maxWidth: '440px', lineHeight: 1.7 }}>
-                Carga una imagen, marca puntos de interés y crea marcadores interactivos.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <ImageMarkerTool />
-            </div>
-          </>
-        )}
       </main>
 
       {/* Footer */}
@@ -756,7 +734,7 @@ export default function App() {
           {/* Mastocito */}
           <MastocitoCorriendo height={110} style={{ opacity: 0.85 }} />
 
-                   {/* Dedication */}
+          {/* Dedication */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <p style={{ margin: 0, fontSize: '13px', color: 'var(--muted)', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 600 }}>
               Dedicado al
@@ -770,8 +748,8 @@ export default function App() {
           </div>
 
           {/* Instagram */}
-            <a
-              href="https://instagram.com/histoyembrio.uncuyo"
+          <a
+            href="https://instagram.com/histoyembrio.uncuyo"
             target="_blank"
             rel="noopener noreferrer"
             style={{
