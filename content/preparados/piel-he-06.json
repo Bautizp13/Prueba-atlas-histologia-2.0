@@ -1,17 +1,35 @@
 {
-  "stain": "H&E",
-  "id": 5,
-  "slug": "piel-he-06",
-  "name": "Piel",
-  "tissue": "Tejido Conectivo",
-  "structure": "Piel",
+  "repaso": [
+    {
+      "marker": "1",
+      "question": "¿Qué tejido marca?",
+      "answer": "Tejido Conectivo Propiamente dicho Laxo"
+    },
+    {
+      "marker": "2",
+      "question": "¿Qué tejido marca?",
+      "answer": "Tejido Conectivo Propiamente dicho Denso Irregular"
+    }
+  ],
   "img": "/images/05-piel-he-glandular.jpg",
+  "tissue": "Tejido Conectivo",
+  "stain": "H&E",
+  "name": "Piel",
+  "slug": "piel-he-06",
+  "structure": "Piel",
   "markers": [
     {
       "label": "1",
       "x": 39.2,
       "y": 57.7,
+      "text": "Tejido Conectivo Propiamente dicho Laxo"
+    },
+    {
+      "label": "2",
+      "x": 36.9,
+      "y": 83.9,
       "text": "Tejido Conectivo Propiamente dicho Denso Irregular"
     }
-  ]
+  ],
+  "id": 5
 }
