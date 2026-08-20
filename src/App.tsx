@@ -756,7 +756,7 @@ export default function App() {
           {/* Mastocito */}
           <MastocitoCorriendo height={110} style={{ opacity: 0.85 }} />
 
-          {/* Dedication */}
+                   {/* Dedication */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <p style={{ margin: 0, fontSize: '13px', color: 'var(--muted)', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 600 }}>
               Dedicado al
@@ -769,11 +769,9 @@ export default function App() {
             </p>
           </div>
 
-            </p>
-          </div>
           {/* Instagram */}
           
-            <a href="https://instagram.com/histoyembrio.uncuyo"
+            href="https://instagram.com/histoyembrio.uncuyo"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -805,9 +803,9 @@ export default function App() {
             </p>
             <p className="font-display" style={{ margin: 0, fontSize: '18px', color: '#8b4f6b' }}>
               Bautista Zarate &amp; Priscila Millanes
-              </p>
-  <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: 'var(--muted)' }}>
-    ¿Problemas con la pagina? Hablanos: <a href="mailto:zarate.juan@uncuyo.edu.ar" style={{ color: '#8b4f6b', textDecoration: 'underline' }}>zarate.juan@uncuyo.edu.ar</a>
+            </p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: 'var(--muted)' }}>
+              ¿Problemas con la pagina? Hablanos: <a href="mailto:zarate.juan@uncuyo.edu.ar" style={{ color: '#8b4f6b', textDecoration: 'underline' }}>zarate.juan@uncuyo.edu.ar</a>
             </p>
           </div>
 
