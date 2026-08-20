@@ -770,8 +770,8 @@ export default function App() {
           </div>
 
           {/* Instagram */}
-          
-            href="https://instagram.com/histoyembrio.uncuyo"
+            <a
+              href="https://instagram.com/histoyembrio.uncuyo"
             target="_blank"
             rel="noopener noreferrer"
             style={{
