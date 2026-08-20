@@ -1,0 +1,30 @@
+{
+  "repaso": [
+    {
+      "marker": "1",
+      "question": "¿Qué tejido marca la flecha? ¿Qué organo y capa es?",
+      "answer": " Epitelio estratificado plano queratinizado, Epidermis Piel"
+    }
+  ],
+  "img": "/images/04-piel-he-revestimiento.jpg",
+  "annotations": [
+    {
+      "label": "1",
+      "text": "Epitelio estratificado plano queratinizado."
+    }
+  ],
+  "tissue": "Tejido Epitelial de Revestimiento",
+  "stain": "H&E",
+  "name": "Piel",
+  "slug": "04-piel",
+  "structure": "Epidermis",
+  "markers": [
+    {
+      "label": "1",
+      "x": 51.4,
+      "y": 23.9,
+      "text": " Epitelio estratificado plano queratinizado."
+    }
+  ],
+  "id": 4
+}
