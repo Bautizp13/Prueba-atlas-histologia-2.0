@@ -5,10 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Atlas Virtual de Histología</title>
     <meta name="description" content="Atlas virtual de histología — Área de Histología y Embriología, Facultad de Ciencias Médicas, UNCUYO." />
- <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on("init", (user) => {
+          if (!user) {
+            window.netlifyIdentity.on("login", () => {
+              document.location.href = "/admin/";
+            });
+          }
+        });
+        if (window.location.hash && window.location.hash.includes("token")) {
+          window.location.href = "/admin/" + window.location.hash;
+        }
+      }
+    </script>
   </body>
 </html>
