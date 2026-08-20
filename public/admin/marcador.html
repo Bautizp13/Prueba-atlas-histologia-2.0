@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ubicar flecha — Atlas de Histología</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+      background: #fdf4f7;
+      color: #3a2530;
+      padding: 24px 16px 60px;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 6px; color: #8b2f52; }
+    p.sub { color: #7a5a68; font-size: 14px; margin: 0 0 22px; line-height: 1.6; }
+    .dropzone {
+      border: 2px dashed #d99cb2;
+      border-radius: 14px;
+      padding: 32px 16px;
+      text-align: center;
+      color: #a3617e;
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .dropzone.drag { background: #fdeaf0; border-color: #b5365a; }
+    .dropzone input { display: none; }
+    .stage {
+      position: relative;
+      margin-top: 20px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #f0cdd9;
+      background: #f3e8ec;
+      display: none;
+      cursor: crosshair;
+      user-select: none;
+    }
+    .stage img { width: 100%; display: block; pointer-events: none; }
+    .pin {
+      position: absolute;
+      width: 26px; height: 26px;
+      margin-left: -13px; margin-top: -26px;
+      pointer-events: none;
+    }
+    .result {
+      display: none;
+      margin-top: 18px;
+      background: #fff;
+      border: 1.5px solid #f0cdd9;
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .result .row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0;
+      font-size: 15px;
+    }
+    .result .row + .row { border-top: 1px solid #f7e4ea; }
+    .result .label { color: #7a5a68; font-size: 13px; }
+    .result .value {
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-weight: 700; color: #8b2f52; font-size: 16px;
+    }
+    .copyBtn {
+      margin-top: 12px; width: 100%; padding: 11px;
+      border: none; border-radius: 9px;
+      background: #b5365a; color: #fff; font-weight: 600; font-size: 14px;
+      cursor: pointer;
+    }
+    .copyBtn:active { opacity: 0.85; }
+    .hint { font-size: 12.5px; color: #a3617e; margin-top: 10px; line-height: 1.6; }
+    .backlink { display: inline-block; margin-top: 26px; font-size: 13px; color: #8b4f6b; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>📍 Ubicar flecha sobre la foto</h1>
+    <p class="sub">
+      Subí acá la misma foto que vas a cargar en el panel. Hacé clic sobre el punto exacto
+      donde tiene que aparecer la flecha, y copiá los dos números que te aparecen abajo
+      en los campos "x" e "y" del formulario de "Flechas (marcadores)".
+    </p>
+
+    <label class="dropzone" id="dropzone">
+      <input type="file" id="fileInput" accept="image/*" />
+      <span id="dropzoneText">Tocá acá para elegir la foto (o arrastrala)</span>
+    </label>
+
+    <div class="stage" id="stage">
+      <img id="preview" alt="Vista previa" />
+      <svg class="pin" id="pin" style="display:none" viewBox="0 0 44 50" xmlns="http://www.w3.org/2000/svg">
+        <line x1="22" y1="6" x2="22" y2="38" stroke="#1a1a1a" stroke-width="4.5" stroke-linecap="round"/>
+        <line x1="22" y1="6" x2="22" y2="38" stroke="#FFEB00" stroke-width="2.5" stroke-linecap="round"/>
+        <polygon points="22,47 13,31 31,31" fill="#FFEB00" stroke="#1a1a1a" stroke-width="1"/>
+        <circle cx="22" cy="8" r="7.5" fill="#FFEB00" stroke="#1a1a1a" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <div class="result" id="result">
+      <div class="row"><span class="label">Posición horizontal (x)</span><span class="value" id="xVal">—</span></div>
+      <div class="row"><span class="label">Posición vertical (y)</span><span class="value" id="yVal">—</span></div>
+      <button class="copyBtn" id="copyBtn">Copiar "x: __, y: __"</button>
+      <p class="hint">Pegá estos valores en los campos numéricos "x" e "y" del marcador, dentro del panel /admin.</p>
+    </div>
+
+    <a class="backlink" href="/admin/">← Volver al panel de carga</a>
+  </div>
+
+  <script>
+    const dropzone = document.getElementById('dropzone')
+    const dropzoneText = document.getElementById('dropzoneText')
+    const fileInput = document.getElementById('fileInput')
+    const stage = document.getElementById('stage')
+    const preview = document.getElementById('preview')
+    const pin = document.getElementById('pin')
+    const result = document.getElementById('result')
+    const xVal = document.getElementById('xVal')
+    const yVal = document.getElementById('yVal')
+    const copyBtn = document.getElementById('copyBtn')
+
+    function loadFile(file) {
+      if (!file || !file.type.startsWith('image/')) return
+      const url = URL.createObjectURL(file)
+      preview.src = url
+      stage.style.display = 'block'
+      pin.style.display = 'none'
+      result.style.display = 'none'
+      dropzoneText.textContent = file.name
+    }
+
+    fileInput.addEventListener('change', (e) => loadFile(e.target.files[0]))
+
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag') })
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'))
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault()
+      dropzone.classList.remove('drag')
+      loadFile(e.dataTransfer.files[0])
+    })
+
+    stage.addEventListener('click', (e) => {
+      const rect = stage.getBoundingClientRect()
+      const xPct = ((e.clientX - rect.left) / rect.width) * 100
+      const yPct = ((e.clientY - rect.top) / rect.height) * 100
+      const xClamped = Math.max(0, Math.min(100, xPct)).toFixed(1)
+      const yClamped = Math.max(0, Math.min(100, yPct)).toFixed(1)
+
+      pin.style.display = 'block'
+      pin.style.left = xPct + '%'
+      pin.style.top = yPct + '%'
+
+      xVal.textContent = xClamped
+      yVal.textContent = yClamped
+      result.style.display = 'block'
+    })
+
+    copyBtn.addEventListener('click', () => {
+      const text = `x: ${xVal.textContent}, y: ${yVal.textContent}`
+      navigator.clipboard?.writeText(text).then(() => {
+        copyBtn.textContent = '¡Copiado!'
+        setTimeout(() => { copyBtn.textContent = 'Copiar "x: __, y: __"' }, 1500)
+      }).catch(() => {
+        alert(text)
+      })
+    })
+  </script>
+</body>
+</html>
